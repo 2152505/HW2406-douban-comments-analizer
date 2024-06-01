@@ -5,7 +5,7 @@ import time
 import random
 import csv
 
-def GetAllIno(doubanURL_front):
+def GetAllIno(doubanURL_front,isPrint=True):
     BookNames = []
     Prices = []
     Years = []
@@ -17,7 +17,7 @@ def GetAllIno(doubanURL_front):
     print(URLAddressList)
     for doubanURL in URLAddressList:
         # 睡眠2-4秒，别太贪婪
-        time.sleep(random.randint(2,4))
+        time.sleep(random.randint(0,2))
 
         doubanHTML = gazpacho.get(doubanURL)
         doubanTree = gazpacho.Soup(doubanHTML)
@@ -42,7 +42,20 @@ def GetAllIno(doubanURL_front):
             else:
                 Nations.append("中国")
                 Authors.append(extractedInfo)
-    print(BookNames,Prices,Years,Presses,Nations,Authors)
+                
+    with open("./CSV/Top250-3.csv",mode="wt",encoding="utf-8",newline="") as fp:
+        Creator = csv.writer(fp)
+        Creator.writerow(["图书名","价格","出版年","国家","作者"])
+        for BookNames,Prices,Years,Presses,Nations,Authors in zip(BookNames,Prices,Years,Presses,Nations,Authors):
+            Creator.writerow([BookNames,Prices,Years,Presses,Nations,Authors])
+            
+    if isPrint:
+        print("===============================================================================")
+        print("***********************************All Info************************************")
+        print("===============================================================================")
+        print("Now, there is no problem,the Prices and Years are here : \n.", BookNames,Prices,Years,Presses,Nations,Authors)
+        print("===============================================================================")
+        print("\n\n\n\n")
     return BookNames,Prices,Years,Presses,Nations,Authors
 
 
@@ -52,7 +65,7 @@ def GetDoubanHtmlTree(doubanURL):
     return doubanTree
 
 
-def GetBookName(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?start=0")): 
+def GetBookName(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?start=0"),isPrint=True): 
     AllBookNameInDiv = doubanTree.find("div", attrs={"class":"pl2"})
 
     BookNames=[]
@@ -61,27 +74,51 @@ def GetBookName(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?sta
         booknow=AllBookNameInDiv[i].find("a").strip()
         BookNames.append(booknow)
 
-    with open("Top250-1.csv",mode="wt",encoding="utf-8",newline="") as fp:
+    with open("./CSV/Top250-1.csv",mode="wt",encoding="utf-8",newline="") as fp:
         creator = csv.writer(fp)
         creator.writerow(["图书名",])
         for name in BookNames:
             creator.writerow([name,])
+    if isPrint:
+        print("===============================================================================")
+        print("************************************Names**************************************")
+        print("===============================================================================")
+        print("Now, there is no problem,the Prices and Years are here : \n.", BookNames)
+        print("===============================================================================")
+        print("\n\n\n\n")
     return BookNames
     
+ 
+ 
+ 
     
-def GetBookPriceandYears(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?start=0")):
+def GetBookPriceandYears(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?start=0"),isPrint=True):
     BookNames=GetBookName(doubanTree)
     AllBookInfoInP = doubanTree.find("p", attrs={"class":"pl"})
     Prices = [nfs.get_nums(eachInfo.text)[-1]    for eachInfo in AllBookInfoInP]
     Years = [nfs.get_nums(eachInfo.text)[0]    for eachInfo in AllBookInfoInP]
     #print(Prices, Years)
     
-    with open("Top250-2.csv",mode="wt",encoding="utf-8",newline="") as fp:
+    with open("./CSV/Top250-2.csv",mode="wt",encoding="utf-8",newline="") as fp:
         Creator = csv.writer(fp)
         Creator.writerow(["图书名","价格","出版年"])
         for name,price,year in zip(BookNames,Prices,Years):
             Creator.writerow([name,price,year])
-    
+    if isPrint:
+        print("===============================================================================")
+        print("***************************Prices and Years************************************")
+        print("===============================================================================")
+        print("Now, there is no problem,the Prices and Years are here : \n.", Prices,Years)
+        print("===============================================================================")
+        print("\n\n\n\n")
+   
+   
+   
+   
+            
+def GetBookAuthorandNation(doubanTree=GetDoubanHtmlTree("https://book.douban.com/top250?start=0"),isPrint=True):
+    BookNames=GetBookName(doubanTree)
+    AllBookInfoInP = doubanTree.find("p", attrs={"class":"pl"})    
     import parse
     pressTemplate="{press}/{:d}"
     Presses = []
@@ -110,4 +147,10 @@ def GetBookPriceandYears(doubanTree=GetDoubanHtmlTree("https://book.douban.com/t
         else:
             Nations.append("中国")
             Authors.append(extractedInfo)
-    print(Nations,Authors)
+    if isPrint:
+        print("===============================================================================")
+        print("***************************Nations and Author**********************************")
+        print("===============================================================================")
+        print("Now, there is no problem,the Nations and Authors are here : \n.", Nations,Authors)
+        print("===============================================================================")
+        print("\n\n\n\n")
